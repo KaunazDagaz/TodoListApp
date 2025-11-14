@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿// ...existing code...
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using TodoListApp.WebApp.Models;
 using TodoListApp.WebApp.Services.IServices;
@@ -17,9 +21,24 @@ namespace TodoListApp.WebApp.Controllers
             this.mapper = mapper;
         }
 
+        private Guid GetCurrentUserId()
+        {
+            if (HttpContext?.Items["AppUserId"] is Guid idFromItems)
+                return idFromItems;
+
+            var cookie = Request.Cookies["AppUserId"];
+            if (Guid.TryParse(cookie, out var idFromCookie))
+                return idFromCookie;
+
+            return Guid.Empty;
+        }
+
         public async Task<IActionResult> Index()
         {
-            var lists = await service.GetAllAsync();
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return View(new List<ToDoListViewModel>());
+
+            var lists = await service.GetAllAsync(userId);
             var listViewModels = mapper.Map<IEnumerable<ToDoListViewModel>>(lists);
             return View(listViewModels);
         }
@@ -33,14 +52,14 @@ namespace TodoListApp.WebApp.Controllers
                 return View(listViewModel);
 
             var list = mapper.Map<ToDoList>(listViewModel);
-            await service.AddAsync(list);
+            await service.AddAsync(list, GetCurrentUserId());
 
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var list = await service.GetByIdAsync(id);
+            var list = await service.GetByIdAsync(id, GetCurrentUserId());
             if (list == null)
                 return NotFound();
 
@@ -55,14 +74,14 @@ namespace TodoListApp.WebApp.Controllers
                 return View(listViewModel);
 
             var list = mapper.Map<ToDoList>(listViewModel);
-            await service.UpdateAsync(list);
+            await service.UpdateAsync(list, GetCurrentUserId());
 
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int id)
         {
-            var list = await service.GetByIdAsync(id);
+            var list = await service.GetByIdAsync(id, GetCurrentUserId());
             if (list == null)
                 return NotFound();
 
@@ -73,7 +92,7 @@ namespace TodoListApp.WebApp.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await service.DeleteAsync(id);
+            await service.DeleteAsync(id, GetCurrentUserId());
             return RedirectToAction(nameof(Index));
         }
     }

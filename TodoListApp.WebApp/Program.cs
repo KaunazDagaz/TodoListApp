@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TodoListApp.WebApp;
+using TodoListApp.WebApp.Middleware;
 using TodoListApp.WebApp.Models;
 using TodoListApp.WebApp.Services;
 using TodoListApp.WebApp.Services.IServices;
@@ -17,6 +18,8 @@ builder.Services.AddScoped(typeof(ICrudService<>), typeof(CrudService<>));
 builder.Services.AddScoped<TodoListService>();
 
 var app = builder.Build();
+
+app.UseMiddleware<AppUserMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
