@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TodoListApp.WebApp;
 using TodoListApp.WebApp.Models;
 using TodoListApp.WebApp.Services;
 using TodoListApp.WebApp.Services.IServices;
@@ -11,6 +12,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ToDoListDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ToDoListApp")));
 
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped(typeof(ICrudService<>), typeof(CrudService<>));
 builder.Services.AddScoped<TodoListService>();
 
