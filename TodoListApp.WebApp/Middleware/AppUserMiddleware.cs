@@ -11,7 +11,7 @@ namespace TodoListApp.WebApp.Middleware
             this.next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async System.Threading.Tasks.Task InvokeAsync(HttpContext context)
         {
             const string cookieName = "AppUserId";
             var cookieVal = context.Request.Cookies[cookieName];

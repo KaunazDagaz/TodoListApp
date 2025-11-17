@@ -21,6 +21,17 @@ namespace TodoListApp.WebApp.Models
                 .WithMany()
                 .HasForeignKey(t => t.OwnerId)
                 .IsRequired();
+
+            modelBuilder.Entity<Task>()
+                .HasOne(t => t.Assignee)
+                .WithMany()
+                .HasForeignKey(t => t.AssigneeId)
+                .IsRequired();
+            modelBuilder.Entity<Task>()
+                .HasOne(t => t.ToDoList)
+                .WithMany()
+                .HasForeignKey(t => t.ToDoListId)
+                .IsRequired();
         }
     }
 }

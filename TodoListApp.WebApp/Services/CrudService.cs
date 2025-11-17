@@ -15,23 +15,23 @@ namespace TodoListApp.WebApp.Services
             DbSet = this.context.Set<T>();
         }
 
-        public virtual async Task<List<T>> GetAllAsync() => await DbSet.ToListAsync();
+        public virtual async System.Threading.Tasks.Task<List<T>> GetAllAsync() => await DbSet.ToListAsync();
 
         public virtual async Task<T?> GetByIdAsync(int id) => await DbSet.FindAsync(id);
 
-        public virtual async Task AddAsync(T entity)
+        public virtual async System.Threading.Tasks.Task AddAsync(T entity)
         {
             DbSet.Add(entity);
             await context.SaveChangesAsync();
         }
 
-        public virtual async Task UpdateAsync(T entity)
+        public virtual async System.Threading.Tasks.Task UpdateAsync(T entity)
         {
             DbSet.Update(entity);
             await context.SaveChangesAsync();
         }
 
-        public virtual async Task DeleteAsync(int id)
+        public virtual async System.Threading.Tasks.Task DeleteAsync(int id)
         {
             var entity = await DbSet.FindAsync(id);
             if (entity != null)
@@ -62,7 +62,7 @@ namespace TodoListApp.WebApp.Services
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task AddAsync(T entity, Guid ownerId)
+        public virtual async System.Threading.Tasks.Task AddAsync(T entity, Guid ownerId)
         {
             EnsureHasGuidOwnerProperty();
             var ownerProp = typeof(T).GetProperty("OwnerId")!;
@@ -71,7 +71,7 @@ namespace TodoListApp.WebApp.Services
             await context.SaveChangesAsync();
         }
 
-        public virtual async Task UpdateAsync(T entity, Guid ownerId)
+        public virtual async System.Threading.Tasks.Task UpdateAsync(T entity, Guid ownerId)
         {
             EnsureHasGuidOwnerProperty();
 
@@ -89,7 +89,7 @@ namespace TodoListApp.WebApp.Services
             await context.SaveChangesAsync();
         }
 
-        public virtual async Task DeleteAsync(int id, Guid ownerId)
+        public virtual async System.Threading.Tasks.Task DeleteAsync(int id, Guid ownerId)
         {
             EnsureHasGuidOwnerProperty();
             var entity = await GetByIdAsync(id, ownerId);
