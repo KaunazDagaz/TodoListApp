@@ -5,8 +5,45 @@
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-6 fw-bold text-primary mb-0">My Tasks</h1>
+        <div>
+            <h1 class="display-6 fw-bold text-primary mb-1">My Tasks</h1>
+            <p class="text-muted small mb-0">Filter by status and sort by title or due date. Active tasks shown by default.</p>
+        </div>
         <a asp-controller="ToDoList" asp-action="Index" class="btn btn-outline-secondary">Back to lists</a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="statusFilter">Status</label>
+                    <select id="statusFilter" name="statusFilter" class="form-select">
+                        <option value="active" selected="@(ViewBag.StatusFilter == "active" ? "selected" : null)">Active (Not Started, In Progress)</option>
+                        <option value="notstarted" selected="@(ViewBag.StatusFilter == "notstarted" ? "selected" : null)">Not Started</option>
+                        <option value="inprogress" selected="@(ViewBag.StatusFilter == "inprogress" ? "selected" : null)">In Progress</option>
+                        <option value="completed" selected="@(ViewBag.StatusFilter == "completed" ? "selected" : null)">Completed</option>
+                        <option value="all" selected="@(ViewBag.StatusFilter == "all" ? "selected" : null)">All</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="sortBy">Sort by</label>
+                    <select id="sortBy" name="sortBy" class="form-select">
+                        <option value="title" selected="@(ViewBag.SortBy == "title" ? "selected" : null)">Title</option>
+                        <option value="due" selected="@(ViewBag.SortBy == "due" ? "selected" : null)">Due date</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold" for="direction">Direction</label>
+                    <select id="direction" name="direction" class="form-select">
+                        <option value="asc" selected="@(ViewBag.Direction == "asc" ? "selected" : null)">Ascending</option>
+                        <option value="desc" selected="@(ViewBag.Direction == "desc" ? "selected" : null)">Descending</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="alert alert-info small" role="alert">
@@ -23,7 +60,7 @@
                             <th class="px-4 py-3 fw-semibold">List</th>
                             <th class="px-4 py-3 fw-semibold">Due</th>
                             <th class="px-4 py-3 fw-semibold">Status</th>
-                            <th class="px-4 py-3 text-end fw-semibold" style="width: 150px;">Actions</th>
+                            <th class="px-4 py-3 text-end fw-semibold" style="width: 190px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,18 +87,19 @@
                                     }
                                 </td>
                                 <td class="px-4 py-3">
-                                    @switch (item.Status)
-                                    {
-                                        case TodoListApp.WebApp.Models.TaskStatus.NotStarted:
-                                            <span class="badge bg-secondary">Not Started</span>
-                                            break;
-                                        case TodoListApp.WebApp.Models.TaskStatus.InProgress:
-                                            <span class="badge bg-info text-dark">In Progress</span>
-                                            break;
-                                        case TodoListApp.WebApp.Models.TaskStatus.Completed:
-                                            <span class="badge bg-success">Completed</span>
-                                            break;
-                                    }
+                                    <form asp-action="AssignedUpdateStatus" method="post" class="d-flex gap-2 align-items-center">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="statusFilter" value="@ViewBag.StatusFilter" />
+                                        <input type="hidden" name="sortBy" value="@ViewBag.SortBy" />
+                                        <input type="hidden" name="direction" value="@ViewBag.Direction" />
+                                        <select name="status" class="form-select form-select-sm" aria-label="Task status">
+                                            <option value="NotStarted" selected="@(item.Status == TodoListApp.WebApp.Models.TaskStatus.NotStarted ? "selected" : null)">Not Started</option>
+                                            <option value="InProgress" selected="@(item.Status == TodoListApp.WebApp.Models.TaskStatus.InProgress ? "selected" : null)">In Progress</option>
+                                            <option value="Completed" selected="@(item.Status == TodoListApp.WebApp.Models.TaskStatus.Completed ? "selected" : null)">Completed</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                    </form>
                                 </td>
                                 <td class="px-4 py-3 text-end">
                                     <a asp-action="AssignedDetails" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Details</a>

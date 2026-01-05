@@ -35,7 +35,7 @@ namespace TodoListApp.WebApp.Models
                 .IsRequired();
             modelBuilder.Entity<Task>()
                 .HasOne(t => t.ToDoList)
-                .WithMany()
+                .WithMany(l => l.Tasks)
                 .HasForeignKey(t => t.ToDoListId)
                 .IsRequired();
         }

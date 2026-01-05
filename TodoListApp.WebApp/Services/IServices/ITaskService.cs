@@ -8,7 +8,8 @@ namespace TodoListApp.WebApp.Services.IServices
         Task<List<TaskModel>> GetByListIdAsync(int listId, Guid ownerId);
         Task<TaskModel?> GetDetailedByIdAsync(int id, Guid ownerId);
         Task<ToDoList?> GetListForUserAsync(int listId, Guid ownerId);
-        Task<List<TaskModel>> GetAssignedToAsync(Guid assigneeId);
         Task<TaskModel?> GetAssignedTaskAsync(int id, Guid assigneeId);
+        Task<List<TaskModel>> GetAssignedToAsync(Guid assigneeId, IEnumerable<Models.TaskStatus>? statuses = null, string sortBy = "due", bool ascending = true);
+        Task<bool> UpdateStatusAsAssigneeAsync(int id, Guid assigneeId, Models.TaskStatus status);
     }
 }
