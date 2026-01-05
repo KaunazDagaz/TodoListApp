@@ -11,6 +11,7 @@ namespace TodoListApp.WebApp.Models
 
         public DbSet<ToDoList> ToDoLists { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Task> Tasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,11 @@ namespace TodoListApp.WebApp.Models
                 .HasForeignKey(t => t.OwnerId)
                 .IsRequired();
 
+            modelBuilder.Entity<Task>()
+                .HasOne(t => t.Owner)
+                .WithMany()
+                .HasForeignKey(t => t.OwnerId)
+                .IsRequired();
             modelBuilder.Entity<Task>()
                 .HasOne(t => t.Assignee)
                 .WithMany()

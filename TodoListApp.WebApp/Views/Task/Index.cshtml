@@ -1,0 +1,98 @@
+@model IEnumerable<TodoListApp.WebApp.ViewModels.TaskViewModel>
+@{
+    var listId = ViewBag.ListId as int? ?? 0;
+    var listTitle = ViewBag.ListTitle as string ?? "Tasks";
+    ViewData["Title"] = $"Tasks - {listTitle}";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-uppercase text-muted mb-1 small">To-Do List</p>
+            <h1 class="display-6 fw-bold text-primary mb-0">@listTitle</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="ToDoList" asp-action="Index" class="btn btn-outline-secondary">Back to lists</a>
+            <a asp-action="Create" asp-route-listId="@listId" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add Task
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-info small" role="alert">
+        Overdue tasks are highlighted in red to help you spot them quickly.
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="px-4 py-3 fw-semibold">Title</th>
+                            <th class="px-4 py-3 fw-semibold">Due</th>
+                            <th class="px-4 py-3 fw-semibold">Status</th>
+                            <th class="px-4 py-3 fw-semibold">Assignee</th>
+                            <th class="px-4 py-3 fw-semibold">Created</th>
+                            <th class="px-4 py-3 text-end fw-semibold" style="width: 210px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var rowClass = item.IsOverdue ? "table-danger" : string.Empty;
+                            <tr class="@rowClass">
+                                <td class="px-4 py-3">
+                                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-listId="@listId" class="fw-semibold text-decoration-none text-dark">
+                                        @(item.Title?.Length > 30 ? item.Title.Substring(0, 30) + "..." : item.Title)
+                                    </a>
+                                    @if (item.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger ms-2">Overdue</span>
+                                    }
+                                </td>
+                                <td class="px-4 py-3 text-muted">
+                                    @if (item.DueDate.HasValue)
+                                    {
+                                        @item.DueDate.Value.ToLocalTime().ToString("d")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No due date</span>
+                                    }
+                                </td>
+                                <td class="px-4 py-3">
+                                    @switch (item.Status)
+                                    {
+                                        case TodoListApp.WebApp.Models.TaskStatus.NotStarted:
+                                            <span class="badge bg-secondary">Not Started</span>
+                                            break;
+                                        case TodoListApp.WebApp.Models.TaskStatus.InProgress:
+                                            <span class="badge bg-info text-dark">In Progress</span>
+                                            break;
+                                        case TodoListApp.WebApp.Models.TaskStatus.Completed:
+                                            <span class="badge bg-success">Completed</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="px-4 py-3 text-muted">
+                                    @(string.IsNullOrWhiteSpace(item.AssigneeDisplay) ? item.AssigneeId.ToString() : item.AssigneeDisplay)
+                                </td>
+                                <td class="px-4 py-3 text-muted">
+                                    @item.CreatedDate.ToLocalTime().ToString("g")
+                                </td>
+                                <td class="px-4 py-3 text-end">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" asp-route-listId="@listId" class="btn btn-sm btn-outline-secondary">Details</a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-listId="@listId" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-listId="@listId" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

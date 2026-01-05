@@ -1,0 +1,72 @@
+@model TodoListApp.WebApp.ViewModels.TaskViewModel
+@{
+    var listId = Model.ToDoListId;
+    ViewData["Title"] = $"Task Details - {Model.Title}";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-uppercase text-muted mb-1 small">@Model.ToDoListTitle</p>
+            <h1 class="display-6 fw-bold text-primary mb-0">@Model.Title</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-listId="@listId" class="btn btn-outline-primary">Edit</a>
+            <a asp-action="Index" asp-route-listId="@listId" class="btn btn-outline-secondary">Back to tasks</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3 mb-3">
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted fw-semibold">Title</dt>
+                        <dd class="col-sm-8 fw-medium">@Model.Title</dd>
+
+                        <dt class="col-sm-4 text-muted fw-semibold">Description</dt>
+                        <dd class="col-sm-8">@Model.Description</dd>
+
+                        <dt class="col-sm-4 text-muted fw-semibold">Created</dt>
+                        <dd class="col-sm-8">@Model.CreatedDate.ToLocalTime().ToString("f")</dd>
+
+                        <dt class="col-sm-4 text-muted fw-semibold">Due date</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.DueDate.HasValue)
+                            {
+                                <span>@Model.DueDate.Value.ToLocalTime().ToString("D")</span>
+                                if (Model.IsOverdue)
+                                {
+                                    <span class="badge bg-danger ms-2">Overdue</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">No due date set</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted fw-semibold">Status</dt>
+                        <dd class="col-sm-8">
+                            @switch (Model.Status)
+                            {
+                                case TodoListApp.WebApp.Models.TaskStatus.NotStarted:
+                                    <span class="badge bg-secondary">Not Started</span>
+                                    break;
+                                case TodoListApp.WebApp.Models.TaskStatus.InProgress:
+                                    <span class="badge bg-info text-dark">In Progress</span>
+                                    break;
+                                case TodoListApp.WebApp.Models.TaskStatus.Completed:
+                                    <span class="badge bg-success">Completed</span>
+                                    break;
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted fw-semibold">Assignee</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.AssigneeDisplay) ? Model.AssigneeId.ToString() : Model.AssigneeDisplay)</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
