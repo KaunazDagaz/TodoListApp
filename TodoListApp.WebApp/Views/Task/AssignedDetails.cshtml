@@ -1,0 +1,51 @@
+@model TodoListApp.WebApp.ViewModels.TaskViewModel
+@{
+    ViewData["Title"] = "Task Details";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-uppercase text-muted mb-1 small">@Model.ToDoListTitle</p>
+            <h1 class="display-6 fw-bold text-primary mb-0">@Model.Title</h1>
+        </div>
+        <a asp-action="Assigned" class="btn btn-outline-secondary">Back to my tasks</a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <dl class="row mb-0">
+                <dt class="col-sm-3 text-muted fw-semibold">Title</dt>
+                <dd class="col-sm-9 fw-medium">@Model.Title</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Description</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Due date</dt>
+                <dd class="col-sm-9">
+                    @if (Model.DueDate.HasValue)
+                    {
+                        <span>@Model.DueDate.Value.ToLocalTime().ToString("D")</span>
+                        if (Model.IsOverdue)
+                        {
+                            <span class="badge bg-danger ms-2">Overdue</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">No due date set</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Status</dt>
+                <dd class="col-sm-9">@Model.Status</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">List</dt>
+                <dd class="col-sm-9">@Model.ToDoListTitle</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Assignee</dt>
+                <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.AssigneeDisplay) ? Model.AssigneeId.ToString() : Model.AssigneeDisplay)</dd>
+            </dl>
+        </div>
+    </div>
+</div>
