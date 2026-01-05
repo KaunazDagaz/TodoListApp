@@ -282,7 +282,7 @@ namespace TodoListApp.WebApp.Controllers
             return RedirectToAction(nameof(Index), new { listId });
         }
 
-        public async Task<IActionResult> Assigned()
+        public async Task<IActionResult> Assigned(string? statusFilter = "active", string? sortBy = "due", string? direction = "asc")
         {
             Guid userId = GetCurrentUserId();
             if (userId == Guid.Empty)
@@ -290,12 +290,30 @@ namespace TodoListApp.WebApp.Controllers
                 return RedirectToAction("Index", "ToDoList");
             }
 
-            List<TaskModel> tasks = await taskService.GetAssignedToAsync(userId);
+            (IEnumerable<Models.TaskStatus> statuses, string appliedFilter) = BuildStatusFilter(statusFilter);
+            bool ascending = string.Equals(direction, "asc", StringComparison.OrdinalIgnoreCase);
+
+            List<TaskModel> tasks = await taskService.GetAssignedToAsync(userId, statuses, sortBy ?? "due", ascending);
             IEnumerable<TaskViewModel> viewModel = mapper.Map<IEnumerable<TaskViewModel>>(tasks);
 
             ViewData["Title"] = "My Tasks";
+            ViewBag.StatusFilter = appliedFilter;
+            ViewBag.SortBy = sortBy;
+            ViewBag.Direction = ascending ? "asc" : "desc";
 
             return View(viewModel);
+        }
+
+        private static (IEnumerable<Models.TaskStatus> statuses, string applied) BuildStatusFilter(string? statusFilter)
+        {
+            return (statusFilter?.ToLowerInvariant()) switch
+            {
+                "notstarted" => ((IEnumerable<Models.TaskStatus> statuses, string applied))(new[] { Models.TaskStatus.NotStarted }, "notstarted"),
+                "inprogress" => ((IEnumerable<Models.TaskStatus> statuses, string applied))(new[] { Models.TaskStatus.InProgress }, "inprogress"),
+                "completed" => ((IEnumerable<Models.TaskStatus> statuses, string applied))(new[] { Models.TaskStatus.Completed }, "completed"),
+                "all" => ((IEnumerable<Models.TaskStatus> statuses, string applied))(Array.Empty<Models.TaskStatus>(), "all"),
+                _ => ((IEnumerable<Models.TaskStatus> statuses, string applied))(new[] { Models.TaskStatus.NotStarted, Models.TaskStatus.InProgress }, "active"),
+            };
         }
 
         public async Task<IActionResult> AssignedDetails(int id)
@@ -314,6 +332,20 @@ namespace TodoListApp.WebApp.Controllers
 
             TaskViewModel viewModel = mapper.Map<TaskViewModel>(task);
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignedUpdateStatus(int id, Models.TaskStatus status, string? statusFilter = "active", string? sortBy = "due", string? direction = "asc")
+        {
+            Guid userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return RedirectToAction("Index", "ToDoList");
+            }
+
+            bool updated = await taskService.UpdateStatusAsAssigneeAsync(id, userId, status);
+            return !updated ? NotFound() : RedirectToAction(nameof(Assigned), new { statusFilter, sortBy, direction });
         }
     }
 }
