@@ -51,7 +51,14 @@ namespace TodoListApp.WebApp.Services
             return await listService.GetByIdAsync(listId, ownerId);
         }
 
-        public async Task<List<TaskModel>> GetAssignedToAsync(Guid assigneeId, IEnumerable<Models.TaskStatus>? statuses = null, string sortBy = "due", bool ascending = true)
+        public async Task<List<TaskModel>> GetAssignedToAsync(
+            Guid assigneeId, 
+            IEnumerable<Models.TaskStatus>? statuses = null, 
+            string sortBy = "due", 
+            bool ascending = true,
+            string? titleQuery = null,
+            DateTime? createdDate = null,
+            DateTime? dueDate = null)
         {
             IQueryable<TaskModel> query = context.Tasks
                 .Include(t => t.ToDoList)
@@ -61,6 +68,27 @@ namespace TodoListApp.WebApp.Services
             if (statusSet.Any())
             {
                 query = query.Where(t => statusSet.Contains(t.Status));
+            }
+
+            if (!string.IsNullOrWhiteSpace(titleQuery))
+            {
+                string normalized = titleQuery.Trim();
+                string pattern = $"%{normalized}%";
+                query = query.Where(t => EF.Functions.Like(t.Title, pattern));
+            }
+
+            if (createdDate.HasValue)
+            {
+                DateTime start = EnsureUtc(createdDate.Value.Date);
+                DateTime end = start.AddDays(1);
+                query = query.Where(t => t.CreatedDate >= start && t.CreatedDate < end);
+            }
+
+            if (dueDate.HasValue)
+            {
+                DateTime start = EnsureUtc(dueDate.Value.Date);
+                DateTime end = start.AddDays(1);
+                query = query.Where(t => t.DueDate >= start && t.DueDate < end);
             }
 
             query = sortBy.ToLowerInvariant() switch

@@ -14,33 +14,47 @@
 
     <div class="card shadow-sm border-0 rounded-3 mb-3">
         <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
+            <form method="get" class="row g-2">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold" for="statusFilter">Status</label>
+                    <label class="form-label small text-muted mb-1" for="titleQuery">Title</label>
+                    <input type="text" id="titleQuery" name="titleQuery" class="form-control" value="@ViewBag.TitleQuery" placeholder="Search title..." />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-1" for="createdDate">Created Date</label>
+                    <input type="date" id="createdDate" name="createdDate" class="form-control" value="@ViewBag.CreatedDate" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-1" for="dueDate">Due Date</label>
+                    <input type="date" id="dueDate" name="dueDate" class="form-control" value="@ViewBag.DueDate" />
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1" for="statusFilter">Status</label>
                     <select id="statusFilter" name="statusFilter" class="form-select">
-                        <option value="active" selected="@(ViewBag.StatusFilter == "active" ? "selected" : null)">Active (Not Started, In Progress)</option>
+                        <option value="active" selected="@(ViewBag.StatusFilter == "active" ? "selected" : null)">Active</option>
                         <option value="notstarted" selected="@(ViewBag.StatusFilter == "notstarted" ? "selected" : null)">Not Started</option>
                         <option value="inprogress" selected="@(ViewBag.StatusFilter == "inprogress" ? "selected" : null)">In Progress</option>
                         <option value="completed" selected="@(ViewBag.StatusFilter == "completed" ? "selected" : null)">Completed</option>
                         <option value="all" selected="@(ViewBag.StatusFilter == "all" ? "selected" : null)">All</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold" for="sortBy">Sort by</label>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1" for="sortBy">Sort by</label>
                     <select id="sortBy" name="sortBy" class="form-select">
                         <option value="title" selected="@(ViewBag.SortBy == "title" ? "selected" : null)">Title</option>
                         <option value="due" selected="@(ViewBag.SortBy == "due" ? "selected" : null)">Due date</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold" for="direction">Direction</label>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1" for="direction">Direction</label>
                     <select id="direction" name="direction" class="form-select">
                         <option value="asc" selected="@(ViewBag.Direction == "asc" ? "selected" : null)">Ascending</option>
                         <option value="desc" selected="@(ViewBag.Direction == "desc" ? "selected" : null)">Descending</option>
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                    <a asp-action="Assigned" class="btn btn-outline-secondary w-100">Clear</a>
                 </div>
             </form>
         </div>
@@ -93,6 +107,9 @@
                                         <input type="hidden" name="statusFilter" value="@ViewBag.StatusFilter" />
                                         <input type="hidden" name="sortBy" value="@ViewBag.SortBy" />
                                         <input type="hidden" name="direction" value="@ViewBag.Direction" />
+                                        <input type="hidden" name="titleQuery" value="@ViewBag.TitleQuery" />
+                                        <input type="hidden" name="createdDate" value="@ViewBag.CreatedDate" />
+                                        <input type="hidden" name="dueDate" value="@ViewBag.DueDate" />
                                         <select name="status" class="form-select form-select-sm" aria-label="Task status">
                                             <option value="NotStarted" selected="@(item.Status == TodoListApp.WebApp.Models.TaskStatus.NotStarted ? "selected" : null)">Not Started</option>
                                             <option value="InProgress" selected="@(item.Status == TodoListApp.WebApp.Models.TaskStatus.InProgress ? "selected" : null)">In Progress</option>

@@ -282,7 +282,7 @@ namespace TodoListApp.WebApp.Controllers
             return RedirectToAction(nameof(Index), new { listId });
         }
 
-        public async Task<IActionResult> Assigned(string? statusFilter = "active", string? sortBy = "due", string? direction = "asc")
+        public async Task<IActionResult> Assigned([FromQuery] TaskFilterViewModel filter)
         {
             Guid userId = GetCurrentUserId();
             if (userId == Guid.Empty)
@@ -290,16 +290,27 @@ namespace TodoListApp.WebApp.Controllers
                 return RedirectToAction("Index", "ToDoList");
             }
 
-            (IEnumerable<Models.TaskStatus> statuses, string appliedFilter) = BuildStatusFilter(statusFilter);
-            bool ascending = string.Equals(direction, "asc", StringComparison.OrdinalIgnoreCase);
+            (IEnumerable<Models.TaskStatus> statuses, string appliedFilter) = BuildStatusFilter(filter.StatusFilter);
+            bool ascending = string.Equals(filter.Direction, "asc", StringComparison.OrdinalIgnoreCase);
 
-            List<TaskModel> tasks = await taskService.GetAssignedToAsync(userId, statuses, sortBy ?? "due", ascending);
+            List<TaskModel> tasks = await taskService.GetAssignedToAsync(
+                userId,
+                statuses,
+                filter.SortBy ?? "due",
+                ascending,
+                filter.TitleQuery,
+                filter.CreatedDate,
+                filter.DueDate);
+
             IEnumerable<TaskViewModel> viewModel = mapper.Map<IEnumerable<TaskViewModel>>(tasks);
 
             ViewData["Title"] = "My Tasks";
             ViewBag.StatusFilter = appliedFilter;
-            ViewBag.SortBy = sortBy;
+            ViewBag.SortBy = filter.SortBy;
             ViewBag.Direction = ascending ? "asc" : "desc";
+            ViewBag.TitleQuery = filter.TitleQuery;
+            ViewBag.CreatedDate = filter.CreatedDate?.ToString("yyyy-MM-dd");
+            ViewBag.DueDate = filter.DueDate?.ToString("yyyy-MM-dd");
 
             return View(viewModel);
         }
@@ -336,7 +347,7 @@ namespace TodoListApp.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignedUpdateStatus(int id, Models.TaskStatus status, string? statusFilter = "active", string? sortBy = "due", string? direction = "asc")
+        public async Task<IActionResult> AssignedUpdateStatus(int id, Models.TaskStatus status, TaskFilterViewModel filter)
         {
             Guid userId = GetCurrentUserId();
             if (userId == Guid.Empty)
@@ -345,7 +356,17 @@ namespace TodoListApp.WebApp.Controllers
             }
 
             bool updated = await taskService.UpdateStatusAsAssigneeAsync(id, userId, status);
-            return !updated ? NotFound() : RedirectToAction(nameof(Assigned), new { statusFilter, sortBy, direction });
+            return !updated 
+                ? NotFound() 
+                : RedirectToAction(nameof(Assigned), new 
+                { 
+                    statusFilter = filter.StatusFilter, 
+                    sortBy = filter.SortBy, 
+                    direction = filter.Direction, 
+                    titleQuery = filter.TitleQuery, 
+                    createdDate = filter.CreatedDate, 
+                    dueDate = filter.DueDate 
+                });
         }
     }
 }
