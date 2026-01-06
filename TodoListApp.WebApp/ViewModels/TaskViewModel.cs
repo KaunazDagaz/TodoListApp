@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace TodoListApp.WebApp.ViewModels
@@ -31,6 +32,8 @@ namespace TodoListApp.WebApp.ViewModels
         public int ToDoListId { get; set; }
 
         public string? ToDoListTitle { get; set; }
+
+        public List<TagViewModel> Tags { get; set; } = new();
 
         public bool IsOverdue => DueDate.HasValue && DueDate.Value.Date < DateTime.UtcNow.Date && Status != Models.TaskStatus.Completed;
     }

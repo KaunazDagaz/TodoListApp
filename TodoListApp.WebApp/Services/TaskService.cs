@@ -38,6 +38,8 @@ namespace TodoListApp.WebApp.Services
                 : await context.Tasks
                 .Include(t => t.Assignee)
                 .Include(t => t.ToDoList)
+                .Include(t => t.TaskTags)
+                    .ThenInclude(tt => tt.Tag)
                 .FirstOrDefaultAsync(t => t.Id == id && t.OwnerId == ownerId);
         }
 
@@ -106,6 +108,8 @@ namespace TodoListApp.WebApp.Services
             return await context.Tasks
                 .Include(t => t.Assignee)
                 .Include(t => t.ToDoList)
+                .Include(t => t.TaskTags)
+                    .ThenInclude(tt => tt.Tag)
                 .FirstOrDefaultAsync(t => t.Id == id && t.AssigneeId == assigneeId);
         }
 
