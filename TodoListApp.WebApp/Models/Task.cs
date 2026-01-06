@@ -27,6 +27,8 @@ namespace TodoListApp.WebApp.Models
 
         public int ToDoListId { get; set; }
         public ToDoList? ToDoList { get; set; }
+
+        public ICollection<TaskTag>? TaskTags { get; set; }
     }
 
     public enum TaskStatus

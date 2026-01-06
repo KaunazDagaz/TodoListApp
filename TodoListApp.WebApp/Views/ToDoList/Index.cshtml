@@ -38,6 +38,7 @@
                                 <td class="px-4 py-3 text-end">
                                     <div class="btn-group" role="group">
                                         <a asp-controller="Task" asp-action="Index" asp-route-listId="@item.Id" class="btn btn-sm btn-outline-secondary">Tasks</a>
+                                        <a asp-controller="Tag" asp-action="Index" asp-route-listId="@item.Id" class="btn btn-sm btn-outline-info">Tags</a>
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
                                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
                                     </div>

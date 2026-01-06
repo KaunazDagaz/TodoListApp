@@ -13,15 +13,18 @@ namespace TodoListApp.WebApp.Controllers
         private readonly ITaskService taskService;
         private readonly ToDoListDbContext dbContext;
         private readonly IMapper mapper;
+        private readonly ITagService tagService;
 
         public TaskController(
             ITaskService taskService,
             ToDoListDbContext dbContext,
-            IMapper mapper)
+            IMapper mapper,
+            ITagService tagService)
         {
             this.taskService = taskService;
             this.dbContext = dbContext;
             this.mapper = mapper;
+            this.tagService = tagService;
         }
 
         private Guid GetCurrentUserId()
@@ -343,6 +346,50 @@ namespace TodoListApp.WebApp.Controllers
 
             TaskViewModel viewModel = mapper.Map<TaskViewModel>(task);
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTag(int id, int listId, string tagName)
+        {
+            Guid userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return RedirectToAction("Index", "ToDoList");
+            }
+
+            ToDoList? list = await taskService.GetListForUserAsync(listId, userId);
+            if (list == null)
+            {
+                return NotFound();
+            }
+
+            bool added = await tagService.AddTagToTaskAsync(id, tagName, userId);
+            TempData[added ? "TagMessage" : "TagError"] = added ? "Tag added to task." : "Unable to add tag.";
+
+            return RedirectToAction(nameof(Edit), new { id, listId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveTag(int id, int listId, int tagId)
+        {
+            Guid userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return RedirectToAction("Index", "ToDoList");
+            }
+
+            ToDoList? list = await taskService.GetListForUserAsync(listId, userId);
+            if (list == null)
+            {
+                return NotFound();
+            }
+
+            bool removed = await tagService.RemoveTagFromTaskAsync(id, tagId, userId);
+            TempData[removed ? "TagMessage" : "TagError"] = removed ? "Tag removed from task." : "Unable to remove tag.";
+
+            return RedirectToAction(nameof(Edit), new { id, listId });
         }
 
         [HttpPost]

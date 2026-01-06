@@ -58,6 +58,62 @@
                     </form>
                 </div>
             </div>
+
+            <div class="card shadow-sm border-0 rounded-3 mt-3">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-semibold">Tags</h5>
+                        <span class="text-muted small">Only the task creator can change tags</span>
+                    </div>
+
+                    @if (TempData["TagError"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">@TempData["TagError"]</div>
+                    }
+                    @if (TempData["TagMessage"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">@TempData["TagMessage"]</div>
+                    }
+
+                    <div class="mb-3">
+                        @if (Model.Tags != null && Model.Tags.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <form asp-action="RemoveTag" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <input type="hidden" name="listId" value="@listId" />
+                                        <input type="hidden" name="tagId" value="@tag.Id" />
+                                        <span class="badge bg-light text-primary border border-primary d-inline-flex align-items-center gap-2 px-3 py-2">
+                                            <span>@tag.Name</span>
+                                            <button type="submit" class="btn-close" aria-label="Remove tag"></button>
+                                        </span>
+                                    </form>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No tags added yet.</span>
+                        }
+                    </div>
+
+                    <form asp-action="AddTag" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="listId" value="@listId" />
+                        <div class="col-md-8">
+                            <label class="form-label small text-muted" for="tagName">Add tag</label>
+                            <input type="text" id="tagName" name="tagName" class="form-control" placeholder="Enter a tag name" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary w-100">Add Tag</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

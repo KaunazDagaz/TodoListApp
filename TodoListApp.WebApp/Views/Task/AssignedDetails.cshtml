@@ -45,6 +45,25 @@
 
                 <dt class="col-sm-3 text-muted fw-semibold">Assignee</dt>
                 <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.AssigneeDisplay) ? Model.AssigneeId.ToString() : Model.AssigneeDisplay)</dd>
+
+                <dt class="col-sm-3 text-muted fw-semibold">Tags</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Tags != null && Model.Tags.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <a asp-controller="Tag" asp-action="MyTasks" asp-route-tagId="@tag.Id" asp-route-listId="@Model.ToDoListId" class="badge bg-light text-primary border border-primary text-decoration-none">
+                                    @tag.Name
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted">No tags added</span>
+                    }
+                </dd>
             </dl>
         </div>
     </div>
