@@ -86,6 +86,13 @@
                     </dl>
                 </div>
             </div>
+            @{
+                var commentsSection = ViewBag.CommentsSection as CommentSectionViewModel;
+            }
+            @if (commentsSection != null)
+            {
+                @await Html.PartialAsync("~/Views/Shared/_CommentsSection.cshtml", commentsSection)
+            }
         </div>
     </div>
 </div>

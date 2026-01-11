@@ -29,6 +29,8 @@ namespace TodoListApp.WebApp.Models
         public ToDoList? ToDoList { get; set; }
 
         public ICollection<TaskTag>? TaskTags { get; set; }
+
+        public ICollection<Comment>? Comments { get; set; }
     }
 
     public enum TaskStatus

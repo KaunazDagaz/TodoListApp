@@ -14,6 +14,7 @@ namespace TodoListApp.WebApp.Models
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<TaskTag> TaskTags { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,6 +65,18 @@ namespace TodoListApp.WebApp.Models
                 .HasOne(tt => tt.Tag)
                 .WithMany(t => t.TaskTags)
                 .HasForeignKey(tt => tt.TagId)
+                .IsRequired();
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Task)
+                .WithMany(t => t.Comments)
+                .HasForeignKey(c => c.TaskId)
+                .IsRequired();
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Owner)
+                .WithMany()
+                .HasForeignKey(c => c.OwnerId)
                 .IsRequired();
         }
     }

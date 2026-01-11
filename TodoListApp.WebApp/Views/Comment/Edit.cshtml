@@ -1,0 +1,42 @@
+@model TodoListApp.WebApp.ViewModels.CommentEditViewModel
+@{
+    ViewData["Title"] = "Edit Comment";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4">
+                    <h1 class="h4 fw-bold mb-3">Edit Comment</h1>
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="TaskId" />
+                        <input type="hidden" asp-for="ListId" />
+                        <input type="hidden" asp-for="Origin" />
+
+                        <div class="mb-3">
+                            <label asp-for="Text" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Text" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Text" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            @{
+                                var origin = (Model.Origin ?? "details").ToLowerInvariant();
+                                var cancelAction = origin == "edit" ? "Edit" : origin == "assigned" ? "AssignedDetails" : "Details";
+                            }
+                            <a asp-controller="Task" asp-action="@cancelAction" asp-route-id="@Model.TaskId" asp-route-listId="@Model.ListId" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,5 @@
 using AutoMapper;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TodoListApp.WebApp.Models;
@@ -14,17 +15,20 @@ namespace TodoListApp.WebApp.Controllers
         private readonly ToDoListDbContext dbContext;
         private readonly IMapper mapper;
         private readonly ITagService tagService;
+        private readonly ICommentService commentService;
 
         public TaskController(
             ITaskService taskService,
             ToDoListDbContext dbContext,
             IMapper mapper,
-            ITagService tagService)
+            ITagService tagService,
+            ICommentService commentService)
         {
             this.taskService = taskService;
             this.dbContext = dbContext;
             this.mapper = mapper;
             this.tagService = tagService;
+            this.commentService = commentService;
         }
 
         private Guid GetCurrentUserId()
@@ -36,6 +40,31 @@ namespace TodoListApp.WebApp.Controllers
 
             string? cookie = Request.Cookies["AppUserId"];
             return Guid.TryParse(cookie, out Guid idFromCookie) ? idFromCookie : Guid.Empty;
+        }
+
+        private async Task<CommentSectionViewModel> BuildCommentsAsync(TaskModel task, Guid userId, string origin)
+        {
+            List<Comment> comments = await commentService.GetForTaskAsync(task.Id, userId);
+
+            List<CommentViewModel> ordered = comments
+                .Select(c =>
+                {
+                    CommentViewModel viewModel = mapper.Map<CommentViewModel>(c);
+                    viewModel.IsMine = c.OwnerId == userId;
+                    return viewModel;
+                })
+                .OrderByDescending(c => c.IsMine)
+                .ThenByDescending(c => c.CreatedAt)
+                .ToList();
+
+            return new CommentSectionViewModel
+            {
+                TaskId = task.Id,
+                ListId = task.ToDoListId,
+                Origin = origin,
+                CanComment = task.OwnerId == userId || task.AssigneeId == userId,
+                Comments = ordered
+            };
         }
 
         private IEnumerable<SelectListItem> BuildUserSelectList(Guid selectedUserId)
@@ -97,6 +126,11 @@ namespace TodoListApp.WebApp.Controllers
 
             TaskViewModel viewModel = mapper.Map<TaskViewModel>(task);
             viewModel.ToDoListTitle = list.Title;
+            viewModel.CanComment = task.OwnerId == userId || task.AssigneeId == userId;
+
+            CommentSectionViewModel comments = await BuildCommentsAsync(task, userId, "details");
+            viewModel.Comments = comments.Comments;
+            ViewBag.CommentsSection = comments;
 
             return View(viewModel);
         }
@@ -186,6 +220,11 @@ namespace TodoListApp.WebApp.Controllers
 
             TaskViewModel viewModel = mapper.Map<TaskViewModel>(task);
             viewModel.ToDoListTitle = list.Title;
+            viewModel.CanComment = task.OwnerId == userId || task.AssigneeId == userId;
+
+            CommentSectionViewModel comments = await BuildCommentsAsync(task, userId, "edit");
+            viewModel.Comments = comments.Comments;
+            ViewBag.CommentsSection = comments;
 
             ViewBag.Users = BuildUserSelectList(viewModel.AssigneeId);
             ViewBag.ListId = listId;
@@ -209,6 +248,12 @@ namespace TodoListApp.WebApp.Controllers
                 return NotFound();
             }
 
+            TaskModel? existingTask = await taskService.GetDetailedByIdAsync(id, userId);
+            if (existingTask == null || existingTask.ToDoListId != listId)
+            {
+                return NotFound();
+            }
+
             if (id != viewModel.Id)
             {
                 return NotFound();
@@ -216,6 +261,11 @@ namespace TodoListApp.WebApp.Controllers
 
             if (!ModelState.IsValid)
             {
+                viewModel.CanComment = existingTask.OwnerId == userId || existingTask.AssigneeId == userId;
+                CommentSectionViewModel comments = await BuildCommentsAsync(existingTask, userId, "edit");
+                viewModel.Comments = comments.Comments;
+                ViewBag.CommentsSection = comments;
+
                 ViewBag.Users = BuildUserSelectList(viewModel.AssigneeId);
                 ViewBag.ListId = listId;
                 ViewBag.ListTitle = list.Title;
@@ -345,6 +395,11 @@ namespace TodoListApp.WebApp.Controllers
             }
 
             TaskViewModel viewModel = mapper.Map<TaskViewModel>(task);
+            viewModel.CanComment = task.OwnerId == userId || task.AssigneeId == userId;
+
+            CommentSectionViewModel comments = await BuildCommentsAsync(task, userId, "assigned");
+            viewModel.Comments = comments.Comments;
+            ViewBag.CommentsSection = comments;
             return View(viewModel);
         }
 
