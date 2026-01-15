@@ -5,6 +5,7 @@ namespace TodoListApp.WebApp.Middleware
     public class AppUserMiddleware
     {
         private readonly RequestDelegate next;
+        private const string CookieName = "UserId";
 
         public AppUserMiddleware(RequestDelegate next)
         {
@@ -13,46 +14,32 @@ namespace TodoListApp.WebApp.Middleware
 
         public async System.Threading.Tasks.Task InvokeAsync(HttpContext context)
         {
-            const string cookieName = "AppUserId";
-            var cookieVal = context.Request.Cookies[cookieName];
-            if (!Guid.TryParse(cookieVal, out var userId))
+            string? cookieVal = context.Request.Cookies[CookieName];
+            if (!Guid.TryParse(cookieVal, out Guid userId))
             {
-                userId = Guid.NewGuid();
-                context.Response.Cookies.Append(cookieName, userId.ToString(), new CookieOptions
-                {
-                    Expires = DateTimeOffset.UtcNow.AddYears(1),
-                    HttpOnly = true,
-                    Secure = context.Request.IsHttps,
-                    SameSite = SameSiteMode.Lax
-                });
+                await next(context);
+                return;
             }
 
-            var db = context.RequestServices.GetRequiredService<ToDoListDbContext>();
-            var user = await db.Users.FindAsync(userId);
-            var now = DateTime.UtcNow;
-            var ua = context.Request.Headers["User-Agent"].ToString();
+            ToDoListDbContext db = context.RequestServices.GetRequiredService<ToDoListDbContext>();
+            User? user = await db.Users.FindAsync(userId);
+            if (user != null)
+            {
+                DateTime now = DateTime.UtcNow;
+                string ua = context.Request.Headers["User-Agent"].ToString();
 
-            if (user == null)
-            {
-                user = new User
-                {
-                    Id = userId,
-                    CreatedAt = now,
-                    UserAgent = ua,
-                    LastSeen = now
-                };
-                await db.Users.AddAsync(user);
-                await db.SaveChangesAsync();
-            }
-            else
-            {
                 user.LastSeen = now;
                 user.UserAgent = ua;
                 db.Users.Update(user);
                 await db.SaveChangesAsync();
+
+                context.Items["AppUserId"] = userId;
+            }
+            else
+            {
+                context.Response.Cookies.Delete(CookieName);
             }
 
-            context.Items["AppUserId"] = userId;
             await next(context);
         }
     }

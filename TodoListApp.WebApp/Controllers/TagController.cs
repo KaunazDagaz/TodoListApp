@@ -12,28 +12,19 @@ namespace TodoListApp.WebApp.Controllers
         private readonly ITagService tagService;
         private readonly ITaskService taskService;
         private readonly IMapper mapper;
+        private readonly IUserService userService;
 
-        public TagController(ITagService tagService, ITaskService taskService, IMapper mapper)
+        public TagController(ITagService tagService, ITaskService taskService, IMapper mapper, IUserService userService)
         {
             this.tagService = tagService;
             this.taskService = taskService;
             this.mapper = mapper;
-        }
-
-        private Guid GetCurrentUserId()
-        {
-            if (HttpContext?.Items["AppUserId"] is Guid idFromItems)
-            {
-                return idFromItems;
-            }
-
-            string? cookie = Request.Cookies["AppUserId"];
-            return Guid.TryParse(cookie, out Guid idFromCookie) ? idFromCookie : Guid.Empty;
+            this.userService = userService;
         }
 
         public async Task<IActionResult> Index(int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -63,7 +54,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Tasks(int listId, int tagId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -94,7 +85,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> MyTasks(int tagId, int? listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");

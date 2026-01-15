@@ -15,6 +15,7 @@ namespace TodoListApp.WebApp.Controllers
         private readonly ToDoListDbContext dbContext;
         private readonly IMapper mapper;
         private readonly ITagService tagService;
+        private readonly IUserService userService;
         private readonly ICommentService commentService;
 
         public TaskController(
@@ -22,6 +23,7 @@ namespace TodoListApp.WebApp.Controllers
             ToDoListDbContext dbContext,
             IMapper mapper,
             ITagService tagService,
+            IUserService userService,
             ICommentService commentService)
         {
             this.taskService = taskService;
@@ -29,17 +31,7 @@ namespace TodoListApp.WebApp.Controllers
             this.mapper = mapper;
             this.tagService = tagService;
             this.commentService = commentService;
-        }
-
-        private Guid GetCurrentUserId()
-        {
-            if (HttpContext?.Items["AppUserId"] is Guid idFromItems)
-            {
-                return idFromItems;
-            }
-
-            string? cookie = Request.Cookies["AppUserId"];
-            return Guid.TryParse(cookie, out Guid idFromCookie) ? idFromCookie : Guid.Empty;
+            this.userService = userService;
         }
 
         private async Task<CommentSectionViewModel> BuildCommentsAsync(TaskModel task, Guid userId, string origin)
@@ -76,14 +68,14 @@ namespace TodoListApp.WebApp.Controllers
             return users.Select(u => new SelectListItem
             {
                 Value = u.Id.ToString(),
-                Text = string.IsNullOrWhiteSpace(u.UserAgent) ? u.Id.ToString() : u.UserAgent,
+                Text = string.IsNullOrWhiteSpace(u.Email) ? u.Id.ToString() : u.Email,
                 Selected = u.Id == selectedUserId
             });
         }
 
         public async Task<IActionResult> Index(int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -106,7 +98,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Details(int id, int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -137,7 +129,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Create(int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -168,7 +160,7 @@ namespace TodoListApp.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int listId, TaskViewModel viewModel)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -200,7 +192,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Edit(int id, int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -236,7 +228,7 @@ namespace TodoListApp.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, int listId, TaskViewModel viewModel)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -283,7 +275,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Delete(int id, int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -313,7 +305,7 @@ namespace TodoListApp.WebApp.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id, int listId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -337,7 +329,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> Assigned([FromQuery] TaskFilterViewModel filter)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -382,7 +374,7 @@ namespace TodoListApp.WebApp.Controllers
 
         public async Task<IActionResult> AssignedDetails(int id)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -407,7 +399,7 @@ namespace TodoListApp.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTag(int id, int listId, string tagName)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -429,7 +421,7 @@ namespace TodoListApp.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveTag(int id, int listId, int tagId)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");
@@ -451,7 +443,7 @@ namespace TodoListApp.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignedUpdateStatus(int id, Models.TaskStatus status, TaskFilterViewModel filter)
         {
-            Guid userId = GetCurrentUserId();
+            Guid userId = userService.GetCurrentUserId();
             if (userId == Guid.Empty)
             {
                 return RedirectToAction("Index", "ToDoList");

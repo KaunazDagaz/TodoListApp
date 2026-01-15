@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+@using TodoListApp.WebApp.Services.IServices
+@inject IUserService UserService
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,6 +53,28 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-controller="Task" asp-action="Assigned">My tasks</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @{
+                            var currentUserId = UserService.GetCurrentUserId();
+                        }
+                        @if (currentUserId == Guid.Empty)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Account" asp-action="Login">Sign in</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Account" asp-action="Register">Sign up</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link text-white p-0">Sign out</button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
