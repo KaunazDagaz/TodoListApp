@@ -14,15 +14,19 @@ builder.Services.AddDbContext<ToDoListDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ToDoListApp")));
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(typeof(ICrudService<>), typeof(CrudService<>));
 builder.Services.AddScoped<TodoListService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 
 var app = builder.Build();
 
 app.UseMiddleware<AppUserMiddleware>();
+app.UseMiddleware<RequireAuthenticatedUserMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
